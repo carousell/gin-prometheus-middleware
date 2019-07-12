@@ -6,8 +6,8 @@ Export metrics for request duration and request count
 ## Example 
 
     import (
-    "github.com/701search/gin-prometheus-middleware"
-    "github.com/gin-gonic/gin"
+        "github.com/701search/gin-prometheus-middleware"
+        "github.com/gin-gonic/gin"
     )
 
     func main(){
@@ -17,8 +17,8 @@ Export metrics for request duration and request count
         p.Use(r)
         
         r.GET("/", func(c *gin.Context) {
-		        c.JSON(200, "Hello world! visit /metrics for metrics")
-	      })
+            c.JSON(200, "Hello world! visit /metrics for metrics")
+	})
 
         r.Run(":37321")
     }
