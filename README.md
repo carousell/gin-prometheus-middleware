@@ -1,5 +1,7 @@
 # gin-prometheus-middleware
-Go Gin Prometheus middleware to export metrics 
+Go [Gin](https://github.com/gin-gonic/gin) middleware for Prometheus
+
+Export metrics for request duration and request count
 
 ## Example 
 
