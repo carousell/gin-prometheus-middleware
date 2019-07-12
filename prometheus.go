@@ -80,8 +80,9 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 	p.reqCnt = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Subsystem: subsystem,
-			Name:      "hornbill_req_count",
-			Help:      "hornbill req count",
+			Name:      "request_count",
+			Help:      "Number of request
+			",
 		},
 		[]string{"code", "method", "handler", "host", "url"},
 	)
@@ -89,8 +90,8 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 	p.reqDur = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Subsystem: subsystem,
-			Name:      "hornbill_dur",
-			Help:      "hornbill latencies",
+			Name:      "request_duration",
+			Help:      "request latencies",
 			Buckets:   []float64{.005, .01, .02, 0.04, .06, 0.08, .1, 0.15, .25, 0.4, .6, .8, 1, 1.5, 2, 3, 5},
 		},
 		[]string{"code", "method", "handler", "host", "url"},
