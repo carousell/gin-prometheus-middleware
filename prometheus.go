@@ -89,7 +89,7 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 	p.reqDur = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Subsystem: subsystem,
-			Name:      "request_duration",
+			Name:      "request_duration_seconds",
 			Help:      "request latencies",
 			Buckets:   []float64{.005, .01, .02, 0.04, .06, 0.08, .1, 0.15, .25, 0.4, .6, .8, 1, 1.5, 2, 3, 5},
 		},

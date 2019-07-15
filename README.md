@@ -6,7 +6,7 @@ Export metrics for request duration ```request_duration``` and request count ```
 ## Example 
 
     import (
-        "github.com/701search/gin-prometheus-middleware"
+        gpmiddleware "github.com/701search/gin-prometheus-middleware"
         "github.com/gin-gonic/gin"
     )
 
