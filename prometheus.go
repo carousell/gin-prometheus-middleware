@@ -81,8 +81,7 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 		prometheus.CounterOpts{
 			Subsystem: subsystem,
 			Name:      "request_count",
-			Help:      "Number of request
-			",
+			Help:      "Number of request",
 		},
 		[]string{"code", "method", "handler", "host", "url"},
 	)
