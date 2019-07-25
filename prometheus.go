@@ -10,7 +10,7 @@ import (
 )
 
 var defaultMetricPath = "/metrics"
-
+// RequestCounterURLLabelMappingFn url label
 type RequestCounterURLLabelMappingFn func(c *gin.Context) string
 
 // Prometheus contains the metrics gathered by the instance and its path
@@ -83,7 +83,7 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 			Name:      "request_count",
 			Help:      "Number of request",
 		},
-		[]string{"code", "method", "handler", "host", "url"},
+		[]string{"code", "path", "method", "handler", "host", "url"},
 	)
 
 	p.reqDur = prometheus.NewHistogramVec(
@@ -91,9 +91,9 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 			Subsystem: subsystem,
 			Name:      "request_duration_seconds",
 			Help:      "request latencies",
-			Buckets:   []float64{.005, .01, .02, 0.04, .06, 0.08, .1, 0.15, .25, 0.4, .6, .8, 1, 1.5, 2, 3, 5},
+			Buckets:   []float64{.0005, .001, .002, 0.004, .006, 0.008, .01, 0.015, .025, 0.04, .06, .08, 0.1, 0.15, 0.2, 0.3, 0.5},
 		},
-		[]string{"code", "method", "handler", "host", "url"},
+		[]string{"code", "path", "method", "handler", "host", "url"},
 	)
 
 	prometheus.Register(p.reqCnt)
@@ -131,8 +131,8 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 			}
 			url = u.(string)
 		}
-		p.reqDur.WithLabelValues(status, c.Request.Method, c.HandlerName(), c.Request.Host, url).Observe(elapsed)
-		p.reqCnt.WithLabelValues(status, c.Request.Method, c.HandlerName(), c.Request.Host, url).Inc()
+		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path, c.Request.Method, c.HandlerName(), c.Request.Host, url).Observe(elapsed)
+		p.reqCnt.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path, c.Request.Method, c.HandlerName(), c.Request.Host, url).Inc()
 
 	}
 }
