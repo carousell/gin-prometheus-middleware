@@ -83,7 +83,7 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 			Name:      "request_count",
 			Help:      "Number of request",
 		},
-		[]string{"code", "path", "handler", "host", "url"},
+		[]string{"code", "path"},
 	)
 
 	p.reqDur = prometheus.NewHistogramVec(
@@ -93,7 +93,7 @@ func (p *Prometheus) registerMetrics(subsystem string) {
 			Help:      "request latencies",
 			Buckets:   []float64{.0005, .001, .002, 0.004, .006, 0.008, .01, 0.015, .025, 0.04, .06, .08, 0.1, 0.15, 0.2, 0.3, 0.5},
 		},
-		[]string{"code", "path", "handler", "host", "url"},
+		[]string{"code", "path"},
 	)
 
 	prometheus.Register(p.reqCnt)
@@ -121,18 +121,8 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 		status := strconv.Itoa(c.Writer.Status())
 		elapsed := float64(time.Since(start)) / float64(time.Second)
 		
-
-		url := p.ReqCntURLLabelMappingFn(c)
-		// sidecar specific mod
-		if len(p.URLLabelFromContext) > 0 {
-			u, found := c.Get(p.URLLabelFromContext)
-			if !found {
-				u = "unknown"
-			}
-			url = u.(string)
-		}
-		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path, c.HandlerName(), c.Request.Host, url).Observe(elapsed)
-		p.reqCnt.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path, c.HandlerName(), c.Request.Host, url).Inc()
+		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path).Observe(elapsed)
+		p.reqCnt.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path).Inc()
 
 	}
 }
