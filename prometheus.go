@@ -10,19 +10,16 @@ import (
 )
 
 var defaultMetricPath = "/metrics"
+
 // RequestCounterURLLabelMappingFn url label
 type RequestCounterURLLabelMappingFn func(c *gin.Context) string
 
 // Prometheus contains the metrics gathered by the instance and its path
 type Prometheus struct {
-	reqCnt        *prometheus.CounterVec
 	reqDur        *prometheus.HistogramVec
 	router        *gin.Engine
 	listenAddress string
 	MetricsPath   string
-	ReqCntURLLabelMappingFn RequestCounterURLLabelMappingFn
-	// gin.Context string to use as a prometheus URL label
-	URLLabelFromContext string
 }
 
 // NewPrometheus generates a new set of metrics with a certain subsystem name
@@ -30,9 +27,6 @@ func NewPrometheus(subsystem string) *Prometheus {
 
 	p := &Prometheus{
 		MetricsPath: defaultMetricPath,
-		ReqCntURLLabelMappingFn: func(c *gin.Context) string {
-			return c.Request.URL.String() // i.e. by default do nothing, i.e. return URL as is
-		},
 	}
 
 	p.registerMetrics(subsystem)
@@ -76,41 +70,25 @@ func (p *Prometheus) runServer() {
 }
 
 func (p *Prometheus) registerMetrics(subsystem string) {
-	
-	p.reqCnt = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Subsystem: subsystem,
-			Name:      "request_count",
-			Help:      "Number of request",
-		},
-		[]string{"code", "path"},
-	)
 
 	p.reqDur = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Subsystem: subsystem,
 			Name:      "request_duration_seconds",
-			Help:      "request latencies",
+			Help:      "Histogram request latencies",
 			Buckets:   []float64{.005, .01, .02, 0.04, .06, 0.08, .1, 0.15, .25, 0.4, .6, .8, 1, 1.5, 2, 3, 5},
 		},
 		[]string{"code", "path"},
 	)
 
-	prometheus.Register(p.reqCnt)
 	prometheus.Register(p.reqDur)
-
-}
-
-// Use adds the middleware to a gin engine.
-func (p *Prometheus) Use(e *gin.Engine) {
-	e.Use(p.HandlerFunc())
-	p.SetMetricsPath(e)
 }
 
 // HandlerFunc defines handler function for middleware
 func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.String() == p.MetricsPath {
+		uri := c.Request.URL.String()
+		if uri == p.MetricsPath {
 			c.Next()
 			return
 		}
@@ -120,9 +98,8 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 
 		status := strconv.Itoa(c.Writer.Status())
 		elapsed := float64(time.Since(start)) / float64(time.Second)
-		
-		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.HandlerName()).Observe(elapsed)
-		p.reqCnt.WithLabelValues(status, c.Request.Method+"_"+c.HandlerName()).Inc()
+
+		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+uri).Observe(elapsed)
 
 	}
 }
@@ -132,4 +109,16 @@ func prometheusHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
+}
+
+// Use adds the middleware to a gin engine with /metrics route path.
+func (p *Prometheus) Use(e *gin.Engine) {
+	e.Use(p.HandlerFunc())
+	e.GET(p.MetricsPath, prometheusHandler())
+}
+
+// UseCustom adds the middleware to a gin engine with a custom route path.
+func (p *Prometheus) UseCustom(e *gin.Engine) {
+	e.Use(p.HandlerFunc())
+	p.SetMetricsPath(e)
 }
