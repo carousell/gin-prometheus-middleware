@@ -1,4 +1,4 @@
-module github.com/701search/gin-prometheus-middleware
+module github.com/carousell/gin-prometheus-middleware
 
 go 1.13
 

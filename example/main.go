@@ -1,7 +1,7 @@
 package main
 
 import (
-	gpmiddleware "github.com/701search/gin-prometheus-middleware"
+	gpmiddleware "github.com/carousell/gin-prometheus-middleware"
 
 	"github.com/gin-gonic/gin"
 )
