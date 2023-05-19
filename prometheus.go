@@ -98,7 +98,7 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 		status := strconv.Itoa(c.Writer.Status())
 		elapsed := float64(time.Since(start)) / float64(time.Second)
 
-		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.HandlerName()).Observe(elapsed)
+		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path).Observe(elapsed)
 
 	}
 }
