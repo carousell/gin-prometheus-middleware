@@ -24,7 +24,6 @@ type Prometheus struct {
 
 // NewPrometheus generates a new set of metrics with a certain subsystem name
 func NewPrometheus(subsystem string) *Prometheus {
-
 	p := &Prometheus{
 		MetricsPath: defaultMetricPath,
 	}
@@ -54,7 +53,6 @@ func (p *Prometheus) SetListenAddressWithRouter(listenAddress string, r *gin.Eng
 
 // SetMetricsPath set metrics paths
 func (p *Prometheus) SetMetricsPath(e *gin.Engine) {
-
 	if p.listenAddress != "" {
 		p.router.GET(p.MetricsPath, prometheusHandler())
 		p.runServer()
@@ -70,7 +68,6 @@ func (p *Prometheus) runServer() {
 }
 
 func (p *Prometheus) registerMetrics(subsystem string) {
-
 	p.reqDur = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Subsystem: subsystem,
@@ -98,8 +95,7 @@ func (p *Prometheus) HandlerFunc() gin.HandlerFunc {
 		status := strconv.Itoa(c.Writer.Status())
 		elapsed := float64(time.Since(start)) / float64(time.Second)
 
-		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.Request.URL.Path).Observe(elapsed)
-
+		p.reqDur.WithLabelValues(status, c.Request.Method+"_"+c.FullPath()).Observe(elapsed)
 	}
 }
 
